@@ -1,0 +1,44 @@
+# Gradle y Kotlin
+.gradle/
+.kotlin/
+**/build/
+
+# Configuración local del Android SDK
+local.properties
+
+# Archivos locales de Android Studio / IntelliJ
+*.iml
+.idea/
+.navigation/
+captures/
+
+# Compilación nativa
+.externalNativeBuild/
+.cxx/
+**/.externalNativeBuild/
+**/.cxx/
+
+# Binarios generados
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# Firma y credenciales locales
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+secrets.properties
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+Desktop.ini
