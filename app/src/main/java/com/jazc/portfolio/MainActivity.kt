@@ -23,6 +23,9 @@ import com.jazc.portfolio.catalog.DesignSystemScreen
 import com.jazc.portfolio.catalog.PortfolioHome
 import com.jazc.portfolio.catalog.ThemeMode
 
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
