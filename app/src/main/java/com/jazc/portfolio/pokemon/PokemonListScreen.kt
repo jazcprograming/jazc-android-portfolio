@@ -1,6 +1,7 @@
 package com.jazc.portfolio.pokemon
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,7 +33,12 @@ import com.jazc.portfolio.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PokemonListScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun PokemonListScreen(
+    pokemon: List<PokemonItem>,
+    onPokemonClick: (Int) -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -51,17 +58,17 @@ fun PokemonListScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            items(count = 20) { index ->
-                PokemonRow(name = "Pokemon ${index + 1}")
+            items(pokemon, key = { it.id }) { item ->
+                PokemonRow(name = item.name, onClick = { onPokemonClick(item.id) })
             }
         }
     }
 }
 
 @Composable
-private fun PokemonRow(name: String) {
+private fun PokemonRow(name: String, onClick: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -82,5 +89,11 @@ private fun PokemonRow(name: String) {
 @Preview(showBackground = true)
 @Composable
 private fun PokemonListPreview() {
-    JazcTheme { PokemonListScreen(onBack = {}) }
+    JazcTheme {
+        PokemonListScreen(
+            pokemon = listOf(PokemonItem(1, "Pokemon 1"), PokemonItem(2, "Pokemon 2")),
+            onPokemonClick = {},
+            onBack = {},
+        )
+    }
 }
