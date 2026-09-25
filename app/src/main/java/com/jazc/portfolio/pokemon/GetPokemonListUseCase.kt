@@ -7,10 +7,10 @@ import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
 
 class GetPokemonListUseCase @Inject constructor(private val api: PokeApi) {
-    suspend operator fun invoke(): List<PokemonItem> = coroutineScope {
-        val response = api.getPokemonList(limit = 20, offset = 0)
+    suspend operator fun invoke(offset: Int, limit: Int = 20): PokemonPage = coroutineScope {
+        val response = api.getPokemonList(limit = limit, offset = offset)
 
-        response.results.map { item ->
+        val pokemon = response.results.map { item ->
             async {
                 val detail = api.getPokemon(item.name)
 
@@ -21,11 +21,12 @@ class GetPokemonListUseCase @Inject constructor(private val api: PokeApi) {
                     weight = detail.weight,
                     types = detail.types
                         .sortedBy { it.slot }
-                        .map { it.type.name },
+                        .map { it.type.name.toDisplayName() },
                     frontDefault = detail.sprites.other.home.frontDefault
                 )
             }
         }.awaitAll()
+        PokemonPage(pokemon = pokemon, totalCount = response.count)
     }
 
     private fun String.toDisplayName(): String =
@@ -33,3 +34,5 @@ class GetPokemonListUseCase @Inject constructor(private val api: PokeApi) {
             part.replaceFirstChar { c->c.uppercase() }
         }
 }
+
+data class PokemonPage(val pokemon: List<PokemonItem>, val totalCount: Int)

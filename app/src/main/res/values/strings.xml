@@ -1,4 +1,5 @@
 <resources>
+    <string name="pokemon_list_end">All Pokémon loaded</string>
     <string name="pokemon_types">Types</string>
     <string name="pokemon_load_error">Could not load Pokémon. Please try again.</string>
     <string name="pokemon_retry">Retry</string>

@@ -14,28 +14,31 @@ import javax.inject.Inject
 class PokemonViewModel @Inject constructor(
     private val getPokemonList: GetPokemonListUseCase,
 ) : ViewModel() {
-    var pokemon by mutableStateOf<List<PokemonItem>>(emptyList())
-        private set
-    var isLoading by mutableStateOf(false)
-        private set
-    var hasError by mutableStateOf(false)
+    var uiState by mutableStateOf(PokemonUiState())
         private set
 
-    init { loadPokemon() }
+    private val pageSize = 20
+    private var nextOffset = 0
 
-    fun loadPokemon() {
-        if (isLoading) return
-        isLoading = true
-        hasError = false
+    init { loadNextPage() }
+
+    fun loadNextPage() {
+        if (uiState.isLoading || uiState.endReached) return
+        uiState = uiState.copy(isLoading = true, hasError = false)
         viewModelScope.launch {
             try {
-                pokemon = getPokemonList()
+                val page = getPokemonList(offset = nextOffset, limit = pageSize)
+                nextOffset += pageSize
+                uiState = uiState.copy(
+                    pokemon = uiState.pokemon + page.pokemon,
+                    endReached = nextOffset >= page.totalCount || page.pokemon.isEmpty(),
+                )
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                hasError = true
+                uiState = uiState.copy(hasError = true)
             } finally {
-                isLoading = false
+                uiState = uiState.copy(isLoading = false)
             }
         }
     }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -13,8 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,6 +27,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -40,14 +47,23 @@ import com.jazc.portfolio.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonListScreen(
-    pokemon: List<PokemonItem>,
-    isLoading: Boolean,
-    hasError: Boolean,
-    onRetry: () -> Unit,
+    uiState: PokemonUiState,
+    onLoadMore: () -> Unit,
     onPokemonClick: (Int) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val listState = rememberLazyListState()
+    LaunchedEffect(listState, uiState.pokemon.size, uiState.hasError, uiState.endReached) {
+        if (uiState.pokemon.isEmpty() || uiState.hasError || uiState.endReached) return@LaunchedEffect
+        snapshotFlow {
+            val layout = listState.layoutInfo
+            val lastVisible = layout.visibleItemsInfo.lastOrNull()?.index ?: -1
+            layout.totalItemsCount >= uiState.pokemon.size && lastVisible >= uiState.pokemon.size - 3
+        }.distinctUntilChanged().collect { nearEnd ->
+            if (nearEnd) onLoadMore()
+        }
+    }
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -63,15 +79,34 @@ fun PokemonListScreen(
         },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)) {
-            if (isLoading || hasError) {
-                PokemonLoading(isLoading, onRetry)
+            if (uiState.pokemon.isEmpty() && (uiState.isLoading || uiState.hasError)) {
+                PokemonLoading(uiState.isLoading, onLoadMore)
             } else LazyColumn(
+                state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                items(pokemon, key = { it.id }) { item ->
+                items(uiState.pokemon, key = { it.id }) { item ->
                     PokemonRow(pokemon = item, onClick = { onPokemonClick(item.id) })
+                }
+                if (uiState.isLoading || uiState.hasError || uiState.endReached) {
+                    item(key = "pagination") {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            when {
+                                uiState.isLoading -> CircularProgressIndicator()
+                                uiState.hasError -> {
+                                    JazcText(uiText(stringResource(R.string.pokemon_load_error)))
+                                    Button(onClick = onLoadMore) { JazcText(uiText(stringResource(R.string.pokemon_retry))) }
+                                }
+                                uiState.endReached -> Text(stringResource(R.string.pokemon_list_end))
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -112,10 +147,10 @@ private fun PokemonRow(pokemon: PokemonItem, onClick: () -> Unit) {
 private fun PokemonListPreview() {
     JazcTheme {
         PokemonListScreen(
-            pokemon = listOf(PokemonItem(1, "bulbasaur", 7, 69, listOf("grass", "poison"), null)),
-            isLoading = false,
-            hasError = false,
-            onRetry = {},
+            uiState = PokemonUiState(
+                pokemon = listOf(PokemonItem(1, "bulbasaur", 7, 69, listOf("grass", "poison"), null)),
+            ),
+            onLoadMore = {},
             onPokemonClick = {},
             onBack = {},
         )

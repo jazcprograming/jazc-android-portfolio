@@ -16,10 +16,8 @@ fun NavGraphBuilder.pokemonGraph(navController: NavHostController) {
             val flowEntry = remember(entry) { navController.getBackStackEntry(AppRoute.Pokemon.route) }
             val viewModel: PokemonViewModel = hiltViewModel(flowEntry)
             PokemonListScreen(
-                pokemon = viewModel.pokemon,
-                isLoading = viewModel.isLoading,
-                hasError = viewModel.hasError,
-                onRetry = viewModel::loadPokemon,
+                uiState = viewModel.uiState,
+                onLoadMore = viewModel::loadNextPage,
                 onPokemonClick = { id ->
                     navController.navigate(PokemonRoute.Detail.createRoute(id)) { launchSingleTop = true }
                 },
@@ -33,11 +31,13 @@ fun NavGraphBuilder.pokemonGraph(navController: NavHostController) {
             val flowEntry = remember(entry) { navController.getBackStackEntry(AppRoute.Pokemon.route) }
             val viewModel: PokemonViewModel = hiltViewModel(flowEntry)
             val id = requireNotNull(entry.arguments).getInt(PokemonRoute.Detail.ID)
+            val state = viewModel.uiState
+            val pokemon = state.pokemon.firstOrNull { it.id == id }
             PokemonDetailScreen(
-                pokemon = viewModel.pokemon.firstOrNull { it.id == id },
-                isLoading = viewModel.isLoading,
-                hasError = viewModel.hasError,
-                onRetry = viewModel::loadPokemon,
+                pokemon = pokemon,
+                isLoading = state.isLoading && pokemon == null,
+                hasError = state.hasError && pokemon == null,
+                onRetry = viewModel::loadNextPage,
                 onBack = { navController.popBackStack() },
             )
         }
