@@ -1,6 +1,8 @@
 package com.jazc.portfolio.pokemon
 
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -15,8 +17,9 @@ fun NavGraphBuilder.pokemonGraph(navController: NavHostController) {
         composable(PokemonRoute.List.route) { entry ->
             val flowEntry = remember(entry) { navController.getBackStackEntry(AppRoute.Pokemon.route) }
             val viewModel: PokemonViewModel = hiltViewModel(flowEntry)
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
             PokemonListScreen(
-                uiState = viewModel.uiState,
+                uiState = state,
                 onLoadMore = viewModel::loadNextPage,
                 onPokemonClick = { id ->
                     navController.navigate(PokemonRoute.Detail.createRoute(id)) { launchSingleTop = true }
@@ -31,7 +34,7 @@ fun NavGraphBuilder.pokemonGraph(navController: NavHostController) {
             val flowEntry = remember(entry) { navController.getBackStackEntry(AppRoute.Pokemon.route) }
             val viewModel: PokemonViewModel = hiltViewModel(flowEntry)
             val id = requireNotNull(entry.arguments).getInt(PokemonRoute.Detail.ID)
-            val state = viewModel.uiState
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
             val pokemon = state.pokemon.firstOrNull { it.id == id }
             PokemonDetailScreen(
                 pokemon = pokemon,
