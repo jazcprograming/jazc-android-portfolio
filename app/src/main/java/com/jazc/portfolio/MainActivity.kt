@@ -21,14 +21,9 @@ import com.jazc.designsystem.theme.JazcTheme
 import com.jazc.portfolio.catalog.DesignSystemScreen
 import com.jazc.portfolio.catalog.PortfolioHome
 import com.jazc.portfolio.catalog.ThemeMode
-import com.jazc.portfolio.pokemon.PokemonListScreen
-import com.jazc.portfolio.pokemon.PokemonDetailScreen
-import com.jazc.portfolio.pokemon.PokemonListViewModel
 import com.jazc.portfolio.navigation.AppRoute
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.jazc.portfolio.pokemon.pokemonGraph
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -60,7 +55,7 @@ fun PortfolioJAZCApp() {
                 MainNavigation(AppRoute.Home, navController) { modifier ->
                     PortfolioHome(
                         onOpenCatalog = { navController.navigate(AppRoute.DesignSystem.route) },
-                        onOpenPokemon = { navController.navigate(AppRoute.PokemonList.route) },
+                        onOpenPokemon = { navController.navigate(AppRoute.Pokemon.route) },
                         modifier = modifier,
                     )
                 }
@@ -71,21 +66,7 @@ fun PortfolioJAZCApp() {
                         accent = accent, onAccentChange = { accent = it }, modifier = modifier)
                 }
             }
-            composable(AppRoute.PokemonList.route) {
-                val viewModel: PokemonListViewModel = hiltViewModel()
-                PokemonListScreen(
-                    pokemon = viewModel.pokemon,
-                    onPokemonClick = { id -> navController.navigate(AppRoute.PokemonDetail.createRoute(id)) },
-                    onBack = { navController.popBackStack() },
-                )
-            }
-            composable(
-                route = AppRoute.PokemonDetail.route,
-                arguments = listOf(navArgument(AppRoute.PokemonDetail.ID) { type = NavType.IntType }),
-            ) { entry ->
-                val pokemonId = requireNotNull(entry.arguments).getInt(AppRoute.PokemonDetail.ID)
-                PokemonDetailScreen(pokemonId = pokemonId, onBack = { navController.popBackStack() })
-            }
+            pokemonGraph(navController)
         }
     }
 }

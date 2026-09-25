@@ -1,4 +1,10 @@
 <resources>
+    <string name="pokemon_types">Types</string>
+    <string name="pokemon_load_error">Could not load Pokémon. Please try again.</string>
+    <string name="pokemon_retry">Retry</string>
+    <string name="pokemon_not_found">Pokémon not found.</string>
+    <string name="pokemon_height_value">%1$.1f m</string>
+    <string name="pokemon_weight_value">%1$.1f kg</string>
     <string name="pokemon_height">Height</string>
     <string name="pokemon_weight">Weight</string>
     <string name="open_pokemon">Explore Pokémon</string>

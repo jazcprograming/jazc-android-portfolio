@@ -48,7 +48,7 @@ data class PrincipalSpritesDTO(
 
 data class SpritesLinkDTO(
     @SerializedName("front_default")
-    val frontDefault: String
+    val frontDefault: String?
 )
 
 data class PokemonItemDTO(

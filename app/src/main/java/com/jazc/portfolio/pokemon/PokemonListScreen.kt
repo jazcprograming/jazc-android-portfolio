@@ -26,6 +26,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import coil3.compose.AsyncImage
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jazc.designsystem.theme.JazcTheme
@@ -35,6 +38,9 @@ import com.jazc.portfolio.R
 @Composable
 fun PokemonListScreen(
     pokemon: List<PokemonItem>,
+    isLoading: Boolean,
+    hasError: Boolean,
+    onRetry: () -> Unit,
     onPokemonClick: (Int) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -53,20 +59,24 @@ fun PokemonListScreen(
             )
         },
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            items(pokemon, key = { it.id }) { item ->
-                PokemonRow(name = item.name, onClick = { onPokemonClick(item.id) })
+        Box(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)) {
+            if (isLoading || hasError) {
+                PokemonLoading(isLoading, onRetry)
+            } else LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                items(pokemon, key = { it.id }) { item ->
+                    PokemonRow(pokemon = item, onClick = { onPokemonClick(item.id) })
+                }
             }
         }
     }
 }
 
 @Composable
-private fun PokemonRow(name: String, onClick: () -> Unit) {
+private fun PokemonRow(pokemon: PokemonItem, onClick: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
@@ -79,10 +89,17 @@ private fun PokemonRow(name: String, onClick: () -> Unit) {
             ),
             contentAlignment = Alignment.Center,
         ) {
-            Text("P", style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            AsyncImage(
+                model = pokemon.frontDefault,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize().padding(4.dp),
+                contentScale = ContentScale.Fit,
+                placeholder = painterResource(android.R.drawable.ic_menu_gallery),
+                error = painterResource(android.R.drawable.ic_menu_gallery),
+                fallback = painterResource(android.R.drawable.ic_menu_gallery),
+            )
         }
-        Text(name, style = MaterialTheme.typography.titleMedium)
+        Text(pokemon.name, style = MaterialTheme.typography.titleMedium)
     }
 }
 
@@ -91,7 +108,10 @@ private fun PokemonRow(name: String, onClick: () -> Unit) {
 private fun PokemonListPreview() {
     JazcTheme {
         PokemonListScreen(
-            pokemon = listOf(PokemonItem(1, "Pokemon 1"), PokemonItem(2, "Pokemon 2")),
+            pokemon = listOf(PokemonItem(1, "bulbasaur", 7, 69, listOf("grass", "poison"), null)),
+            isLoading = false,
+            hasError = false,
+            onRetry = {},
             onPokemonClick = {},
             onBack = {},
         )
