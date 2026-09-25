@@ -16,7 +16,7 @@ class GetPokemonListUseCase @Inject constructor(private val api: PokeApi) {
 
                 PokemonItem(
                     id = detail.id,
-                    name = detail.name,
+                    name = detail.name.toDisplayName(),
                     height = detail.height,
                     weight = detail.weight,
                     types = detail.types
@@ -27,4 +27,9 @@ class GetPokemonListUseCase @Inject constructor(private val api: PokeApi) {
             }
         }.awaitAll()
     }
+
+    private fun String.toDisplayName(): String =
+        split("-").joinToString(" ") { part ->
+            part.replaceFirstChar { c->c.uppercase() }
+        }
 }

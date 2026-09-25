@@ -31,6 +31,9 @@ import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.jazc.designsystem.component.JazcText
+import com.jazc.designsystem.text.uiText
+import com.jazc.designsystem.theme.JazcTextSize
 import com.jazc.designsystem.theme.JazcTheme
 import com.jazc.portfolio.R
 
@@ -83,7 +86,7 @@ private fun PokemonRow(pokemon: PokemonItem, onClick: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Box(
-            modifier = Modifier.size(64.dp).background(
+            modifier = Modifier.size(80.dp).background(
                 color = MaterialTheme.colorScheme.surfaceContainerHighest,
                 shape = MaterialTheme.shapes.small,
             ),
@@ -99,7 +102,8 @@ private fun PokemonRow(pokemon: PokemonItem, onClick: () -> Unit) {
                 fallback = painterResource(android.R.drawable.ic_menu_gallery),
             )
         }
-        Text(pokemon.name, style = MaterialTheme.typography.titleMedium)
+        JazcText(uiText(pokemon.name),
+            size = JazcTextSize.Lg20)
     }
 }
 
