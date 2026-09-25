@@ -12,27 +12,12 @@ class GetPokemonListUseCase @Inject constructor(private val api: PokeApi) {
 
         val pokemon = response.results.map { item ->
             async {
-                val detail = api.getPokemon(item.name)
-
-                PokemonItem(
-                    id = detail.id,
-                    name = detail.name.toDisplayName(),
-                    height = detail.height,
-                    weight = detail.weight,
-                    types = detail.types
-                        .sortedBy { it.slot }
-                        .map { it.type.name.toDisplayName() },
-                    frontDefault = detail.sprites.other.home.frontDefault
-                )
+                api.getPokemon(item.name).toPokemonItem()
             }
         }.awaitAll()
         PokemonPage(pokemon = pokemon, totalCount = response.count)
     }
 
-    private fun String.toDisplayName(): String =
-        split("-").joinToString(" ") { part ->
-            part.replaceFirstChar { c->c.uppercase() }
-        }
 }
 
 data class PokemonPage(val pokemon: List<PokemonItem>, val totalCount: Int)

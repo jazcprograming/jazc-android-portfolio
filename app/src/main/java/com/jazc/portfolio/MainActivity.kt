@@ -1,5 +1,6 @@
 package com.jazc.portfolio
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,6 +24,7 @@ import com.jazc.portfolio.catalog.PortfolioHome
 import com.jazc.portfolio.catalog.ThemeMode
 import com.jazc.portfolio.navigation.AppRoute
 import com.jazc.portfolio.pokemon.pokemonGraph
+import com.jazc.portfolio.pokemon.PokemonRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,15 +34,34 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private var deepLinkId by mutableStateOf<Int?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) readDeepLink(intent)
         enableEdgeToEdge()
-        setContent { PortfolioJAZCApp() }
+        setContent {
+            PortfolioJAZCApp(deepLinkId = deepLinkId, onDeepLinkHandled = { deepLinkId = null })
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        readDeepLink(intent)
+    }
+
+    private fun readDeepLink(intent: Intent) {
+        if (intent.action != Intent.ACTION_VIEW) return
+        val uri = intent.data ?: return
+        if (uri.scheme != "jazc" || uri.host != "pokemon" || uri.port != -1 || uri.userInfo != null) return
+        if (uri.query != null || uri.fragment != null) return
+        val id = uri.pathSegments.singleOrNull()?.toIntOrNull()?.takeIf { it > 0 } ?: return
+        deepLinkId = id
     }
 }
 
 @Composable
-fun PortfolioJAZCApp() {
+fun PortfolioJAZCApp(deepLinkId: Int? = null, onDeepLinkHandled: () -> Unit = {}) {
     val navController = rememberNavController()
     var themeMode by rememberSaveable { mutableStateOf(ThemeMode.System) }
     var accent by rememberSaveable { mutableStateOf(JazcAccent.Mint) }
@@ -67,6 +88,12 @@ fun PortfolioJAZCApp() {
                 }
             }
             pokemonGraph(navController)
+        }
+        LaunchedEffect(deepLinkId) {
+            deepLinkId?.let { id ->
+                navController.navigate(PokemonRoute.Detail.createRoute(id))
+                onDeepLinkHandled()
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.jazc.portfolio.pokemon
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -30,18 +31,21 @@ fun NavGraphBuilder.pokemonGraph(navController: NavHostController) {
         composable(
             route = PokemonRoute.Detail.route,
             arguments = listOf(navArgument(PokemonRoute.Detail.ID) { type = NavType.IntType }),
-        ) { entry ->
-            val flowEntry = remember(entry) { navController.getBackStackEntry(AppRoute.Pokemon.route) }
-            val viewModel: PokemonViewModel = hiltViewModel(flowEntry)
-            val id = requireNotNull(entry.arguments).getInt(PokemonRoute.Detail.ID)
+        ) {
+            val viewModel: PokemonDetailViewModel = hiltViewModel()
             val state by viewModel.uiState.collectAsStateWithLifecycle()
-            val pokemon = state.pokemon.firstOrNull { it.id == id }
+            val onBack: () -> Unit = {
+                if (!navController.popBackStack()) {
+                    navController.navigate(AppRoute.Home.route) { launchSingleTop = true }
+                }
+            }
+            BackHandler(onBack = onBack)
             PokemonDetailScreen(
-                pokemon = pokemon,
-                isLoading = state.isLoading && pokemon == null,
-                hasError = state.hasError && pokemon == null,
-                onRetry = viewModel::loadNextPage,
-                onBack = { navController.popBackStack() },
+                pokemon = state.pokemon,
+                isLoading = state.isLoading,
+                hasError = state.hasError,
+                onRetry = viewModel::loadPokemon,
+                onBack = onBack,
             )
         }
     }
