@@ -49,7 +49,7 @@ private enum class CatalogPage(@param:StringRes val label: Int) {
 }
 
 @Composable
-fun PortfolioHome(onOpenCatalog: () -> Unit, modifier: Modifier = Modifier) {
+fun PortfolioHome(onOpenCatalog: () -> Unit, onOpenPokemon: () -> Unit, modifier: Modifier = Modifier) {
     CatalogLayout(modifier) {
         item {
             Column(Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(
@@ -58,6 +58,9 @@ fun PortfolioHome(onOpenCatalog: () -> Unit, modifier: Modifier = Modifier) {
                 Eyebrow("JAZC / ANDROID")
                 JazcText(uiText(R.string.home_title), size = JazcTextSize.Display40)
                 Body(R.string.home_description)
+                JazcButton(onClick = onOpenPokemon) {
+                    JazcText(uiText(R.string.open_pokemon))
+                }
                 JazcButton(onClick = onOpenCatalog, modifier = Modifier.testTag("open_catalog")) {
                     JazcText(uiText(R.string.open_catalog))
                 }

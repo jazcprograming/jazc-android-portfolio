@@ -1,4 +1,7 @@
 <resources>
+    <string name="open_pokemon">Explorar Pokémon</string>
+    <string name="pokemon_list_title">Pokémon</string>
+    <string name="pokemon_back">Volver</string>
     <string name="app_name">Portfolio JAZC</string>
     <string name="nav_home">Inicio</string>
     <string name="design_system">Design System</string>

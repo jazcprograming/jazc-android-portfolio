@@ -22,6 +22,7 @@ import com.jazc.designsystem.theme.JazcTheme
 import com.jazc.portfolio.catalog.DesignSystemScreen
 import com.jazc.portfolio.catalog.PortfolioHome
 import com.jazc.portfolio.catalog.ThemeMode
+import com.jazc.portfolio.pokemon.PokemonListScreen
 
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -34,7 +35,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Destination { Home, DesignSystem }
+private enum class Destination { Home, DesignSystem, Pokemon }
 
 @Composable
 fun PortfolioJAZCApp() {
@@ -48,7 +49,9 @@ fun PortfolioJAZCApp() {
     }
     BackHandler(destination != Destination.Home) { destination = Destination.Home }
     JazcTheme(darkTheme = dark, accent = accent) {
-        NavigationSuiteScaffold(navigationSuiteItems = {
+        if (destination == Destination.Pokemon) {
+            PokemonListScreen(onBack = { destination = Destination.Home })
+        } else NavigationSuiteScaffold(navigationSuiteItems = {
             item(selected = destination == Destination.Home,
                 onClick = { destination = Destination.Home },
                 icon = { Icon(Icons.Default.Home, contentDescription = null) },
@@ -62,7 +65,12 @@ fun PortfolioJAZCApp() {
                 val contentModifier = Modifier.fillMaxSize().windowInsetsPadding(
                     WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
                 when (destination) {
-                    Destination.Home -> PortfolioHome(onOpenCatalog = { destination = Destination.DesignSystem }, modifier = contentModifier)
+                    Destination.Home -> PortfolioHome(
+                        onOpenCatalog = { destination = Destination.DesignSystem },
+                        onOpenPokemon = { destination = Destination.Pokemon },
+                        modifier = contentModifier,
+                    )
+                    Destination.Pokemon -> Unit
                     Destination.DesignSystem -> DesignSystemScreen(themeMode = themeMode,
                         onThemeModeChange = { themeMode = it }, accent = accent,
                         onAccentChange = { accent = it }, modifier = contentModifier)
